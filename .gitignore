@@ -35,3 +35,10 @@ notes/*.md
 !notes/README.md
 docs/*.md
 !docs/README.md
+
+# Security - GitHub tokens and sensitive data
+*.json
+!*.json
+gh.bat
+gh-proxy.bat
+repo-data.json
