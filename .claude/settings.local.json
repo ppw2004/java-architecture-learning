@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(ls:*)",
+      "Bash(chmod:*)",
+      "Bash(./git-quick-commit.sh \"docs: 添加Java运行环境、包管理器、Web前后端分离完整学习资料\n\n- 添加Java运行环境学习笔记（JDK/JRE/JVM）\n- 添加包管理器学习笔记（Maven/Gradle）\n- 添加Web前后端分离学习笔记和示例项目\n- 创建Maven Hello World示例项目\n- 创建完整的前后端分离用户管理系统（Servlet + Vue）\n- 添加快速参考卡片\n- 更新学习进度清单\n- 创建Git自动提交脚本\")",
+      "Bash(git config:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}

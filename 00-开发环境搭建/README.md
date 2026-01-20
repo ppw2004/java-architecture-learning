@@ -189,6 +189,56 @@ java HelloWorld
 - **Maven** - [maven.apache.org](https://maven.apache.org/)
 - **Gradle** - [gradle.org](https://gradle.org/)
 
+### Lombok 插件
+
+**Lombok** 是一个 Java 库，通过注解简化 Java 代码的编写，自动生成样板代码。
+
+**主要功能:**
+- 自动生成 getter/setter 方法
+- 自动生成 toString、equals、hashCode
+- 自动生成构造方法
+- 简化日志记录
+- 链式调用支持
+
+**常用注解:**
+```java
+@Data                 // 包含 getter/setter/toString/equals/hashCode
+@Getter/@Setter      // 生成 getter/setter 方法
+@ToString            // 生成 toString 方法
+@EqualsAndHashCode   // 生成 equals 和 hashCode
+@NoArgsConstructor    // 无参构造
+@AllArgsConstructor  // 全参构造
+@Builder             // 建造者模式
+@Slf4j               // 自动生成日志对象
+```
+
+**IDE 配置:**
+1. **IntelliJ IDEA**:
+   - File → Settings → Plugins
+   - 搜索 "Lombok Plugin" 并安装
+   - 启用 Annotation Processing
+
+2. **Eclipse**:
+   - 下载 lombok.jar
+   - 运行 `java -jar lombok.jar`
+   - 选择 Eclipse 安装路径
+
+**Maven 依赖:**
+```xml
+<dependency>
+    <groupId>org.projectlombok</groupId>
+    <artifactId>lombok</artifactId>
+    <version>1.18.30</version>
+    <scope>provided</scope>
+</dependency>
+```
+
+**Gradle 依赖:**
+```gradle
+compileOnly 'org.projectlombok:lombok:1.18.30'
+annotationProcessor 'org.projectlombok:lombok:1.18.30'
+```
+
 ### 版本管理
 
 - **Git** - [git-scm.com](https://git-scm.com/)

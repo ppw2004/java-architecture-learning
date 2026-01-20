@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理系统</title>
+    <!-- Element UI CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+        #app {
+            margin: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .login-container {
+            width: 400px;
+            margin: 100px auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 登录页面 -->
+        <div v-if="!isLogin" class="login-container">
+            <el-card>
+                <div slot="header">
+                    <span>用户登录</span>
+                </div>
+                <el-form :model="loginForm" label-width="80px">
+                    <el-form-item label="用户名">
+                        <el-input v-model="loginForm.username" placeholder="请输入用户名"></el-input>
+                    </el-form-item>
+                    <el-form-item label="密码">
+                        <el-input v-model="loginForm.password" type="password" placeholder="请输入密码"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="login" style="width: 100%">登录</el-button>
+                    </el-form-item>
+                </el-form>
+            </el-card>
+        </div>
+
+        <!-- 用户列表页面 -->
+        <div v-if="isLogin">
+            <div class="header">
+                <h2>用户管理系统</h2>
+                <div>
+                    <span style="margin-right: 20px">欢迎，{{ currentUser.nickname }}</span>
+                    <el-button @click="showAddDialog">新增用户</el-button>
+                    <el-button @click="loadUsers">刷新</el-button>
+                    <el-button type="danger" @click="logout">退出</el-button>
+                </div>
+            </div>
+
+            <!-- 用户表格 -->
+            <el-table :data="users" border style="width: 100%">
+                <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                <el-table-column prop="username" label="用户名" width="150"></el-table-column>
+                <el-table-column prop="nickname" label="昵称" width="150"></el-table-column>
+                <el-table-column prop="email" label="邮箱" width="200"></el-table-column>
+                <el-table-column prop="age" label="年龄" width="100"></el-table-column>
+                <el-table-column label="操作">
+                    <template slot-scope="scope">
+                        <el-button size="small" @click="showEditDialog(scope.row)">编辑</el-button>
+                        <el-button size="small" type="danger" @click="deleteUser(scope.row.id)">删除</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+
+            <!-- 新增/编辑对话框 -->
+            <el-dialog
+                :title="dialogTitle"
+                :visible.sync="dialogVisible"
+                width="500px">
+
+                <el-form :model="userForm" label-width="80px">
+                    <el-form-item label="用户名">
+                        <el-input v-model="userForm.username" :disabled="isEdit"></el-input>
+                    </el-form-item>
+                    <el-form-item label="密码" v-if="!isEdit">
+                        <el-input v-model="userForm.password" type="password"></el-input>
+                    </el-form-item>
+                    <el-form-item label="昵称">
+                        <el-input v-model="userForm.nickname"></el-input>
+                    </el-form-item>
+                    <el-form-item label="邮箱">
+                        <el-input v-model="userForm.email"></el-input>
+                    </el-form-item>
+                    <el-form-item label="年龄">
+                        <el-input v-model="userForm.age" type="number"></el-input>
+                    </el-form-item>
+                </el-form>
+
+                <span slot="footer">
+                    <el-button @click="dialogVisible = false">取消</el-button>
+                    <el-button type="primary" @click="saveUser">确定</el-button>
+                </span>
+            </el-dialog>
+        </div>
+    </div>
+
+    <!-- Vue.js -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <!-- Element UI JS -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <!-- Axios -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                isLogin: false,
+                currentUser: {},
+                loginForm: {
+                    username: '',
+                    password: ''
+                },
+                users: [],
+                dialogVisible: false,
+                dialogTitle: '新增用户',
+                isEdit: false,
+                userForm: {
+                    id: null,
+                    username: '',
+                    password: '',
+                    nickname: '',
+                    email: '',
+                    age: null
+                }
+            },
+            methods: {
+                // 登录
+                login() {
+                    if (!this.loginForm.username || !this.loginForm.password) {
+                        this.$message.error('请输入用户名和密码');
+                        return;
+                    }
+
+                    axios.post('http://localhost:8080/api/user/login', this.loginForm)
+                        .then(response => {
+                            const result = response.data;
+                            if (result.code === 200) {
+                                this.isLogin = true;
+                                this.currentUser = result.data;
+                                this.$message.success('登录成功');
+                                this.loadUsers();
+                            } else {
+                                this.$message.error(result.message);
+                            }
+                        })
+                        .catch(error => {
+                            this.$message.error('登录失败');
+                            console.error(error);
+                        });
+                },
+
+                // 退出登录
+                logout() {
+                    this.isLogin = false;
+                    this.currentUser = {};
+                    this.loginForm = { username: '', password: '' };
+                    this.$message.success('已退出登录');
+                },
+
+                // 加载用户列表
+                loadUsers() {
+                    axios.get('http://localhost:8080/api/user/findAll')
+                        .then(response => {
+                            const result = response.data;
+                            if (result.code === 200) {
+                                this.users = result.data;
+                            } else {
+                                this.$message.error(result.message);
+                            }
+                        })
+                        .catch(error => {
+                            this.$message.error('加载用户列表失败');
+                            console.error(error);
+                        });
+                },
+
+                // 显示新增对话框
+                showAddDialog() {
+                    this.dialogTitle = '新增用户';
+                    this.isEdit = false;
+                    this.dialogVisible = true;
+                    this.userForm = {
+                        id: null,
+                        username: '',
+                        password: '',
+                        nickname: '',
+                        email: '',
+                        age: null
+                    };
+                },
+
+                // 显示编辑对话框
+                showEditDialog(user) {
+                    this.dialogTitle = '编辑用户';
+                    this.isEdit = true;
+                    this.dialogVisible = true;
+                    this.userForm = {
+                        id: user.id,
+                        username: user.username,
+                        nickname: user.nickname,
+                        email: user.email,
+                        age: user.age
+                    };
+                },
+
+                // 保存用户（新增或编辑）
+                saveUser() {
+                    const url = this.isEdit ? 'http://localhost:8080/api/user/update' : 'http://localhost:8080/api/user/add';
+                    const method = 'post';
+
+                    axios({ method, url, data: this.userForm })
+                        .then(response => {
+                            const result = response.data;
+                            if (result.code === 200) {
+                                this.$message.success(result.message);
+                                this.dialogVisible = false;
+                                this.loadUsers();
+                            } else {
+                                this.$message.error(result.message);
+                            }
+                        })
+                        .catch(error => {
+                            this.$message.error('保存失败');
+                            console.error(error);
+                        });
+                },
+
+                // 删除用户
+                deleteUser(id) {
+                    this.$confirm('确定要删除这个用户吗?', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        axios.delete('http://localhost:8080/api/user/delete?id=' + id)
+                            .then(response => {
+                                const result = response.data;
+                                if (result.code === 200) {
+                                    this.$message.success('删除成功');
+                                    this.loadUsers();
+                                } else {
+                                    this.$message.error(result.message);
+                                }
+                            })
+                            .catch(error => {
+                                this.$message.error('删除失败');
+                                console.error(error);
+                            });
+                    }).catch(() => {
+                        // 取消删除
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html>
